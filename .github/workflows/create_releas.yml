@@ -63,7 +63,7 @@ jobs:
           git tag ${GITHUB_RUN_NUMBER}
           git push origin ${GITHUB_RUN_NUMBER}
 
-  create_github_issue:
+   create_github_issue:
     needs: create_tag
     runs-on: ubuntu-latest
     permissions:
@@ -71,6 +71,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Create release label if not exists
+        run: |
+          if ! gh label list | grep -q "^release$"; then
+            gh label create release --description "Release label" --color FF0000
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare issue content
         run: |
