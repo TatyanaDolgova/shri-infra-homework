@@ -1,0 +1,88 @@
+name: Fix Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release version to fix"
+        required: true
+
+jobs:
+  fix_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type check and tests
+        run: |
+          npm run lint
+          npm run test
+
+      - name: Checkout release branch
+        run: |
+          git checkout releases/${{ github.event.inputs.release_version }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }} .
+          docker tag cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }} cr.yandex/${{ secrets.YANДЕКС_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+
+      - name: Log in to Yandex Cloud Container Registry
+        run: |
+          docker login \
+            --username oauth \
+            --password "${{ secrets.YANDEX_REGISTRY_TOKEN }}" \
+            cr.yandex
+
+      - name: Push Docker image
+        run: |
+          docker push cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}
+          docker push cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+
+      - name: Set up Git
+        run: |
+          git config --global user.email "you@yandex.ru"
+          git config --global user.name "Tatiana"
+
+      - name: Create fix tag
+        run: |
+          git tag ${{ github.event.inputs.release_version }}-fix${{ github.run_number }}
+          git push origin ${{ github.event.inputs.release_version }}-fix${{ github.run_number }}
+
+      - name: Get previous release tag
+        id: prev_tag
+        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 HEAD^)"
+
+      - name: Add comment to GitHub issue
+        id: add_comment
+        run: |
+          echo "## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}" > issue_comment.md
+          echo "- Date: $(date)" >> issue_comment.md
+          echo "- Author: ${{ github.actor }}" >> issue_comment.md
+          echo "- Commits:" >> issue_comment.md
+          git log ${{ steps.prev_tag.outputs.tag }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
+          echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}" >> issue_comment.md
+
+      - name: Find related issue
+        id: find_issue
+        run: |
+          issue_number=$(gh issue list --label release --search "Release ${{ github.event.inputs.release_version }}" --json number --jq '.[0].number')
+          echo "::set-output name=issue_number::$issue_number"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on the related issue
+        run: |
+          gh issue comment ${{ steps.find_issue.outputs.issue_number }} --body "$(cat issue_comment.md)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
