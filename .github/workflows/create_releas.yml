@@ -80,7 +80,7 @@ jobs:
           echo "- Version: ${{ github.run_number }}" >> issue_template.md
           echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> issue_template.md
           echo "- Commits:" >> issue_template.md
-          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h - %s" >> issue_template.md
+          git log $latest_tag..HEAD --pretty=format:"- %s" >> issue_template.md
 
       - name: Create issue
         run: |
