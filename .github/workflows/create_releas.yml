@@ -48,7 +48,7 @@ jobs:
 
       - name: Create tag for main branch
         run: |
-          git tag -a v${{ github.run_number }} -m "Release version ${{ github.run_number }}"
+          git tag v${{ github.run_number }} -m "Release version ${{ github.run_number }}"
           git push origin v${{ github.run_number }}
 
       - name: Generate release notes
