@@ -46,10 +46,15 @@ jobs:
           docker push cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}
           docker push cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}_latest
 
+      - name: Set up Git
+        run: |
+          git config --global user.email "you@yandex.ru"
+          git config --global user.name "Tatiana"
+
       - name: Create tag for main branch
         run: |
           git tag v${{ github.run_number }} -m "Release version ${{ github.run_number }}"
-          git push origin v${{ github.run_number }}
+          git push orкоigin v${{ github.run_number }}
 
       - name: Generate release notes
         id: notes
