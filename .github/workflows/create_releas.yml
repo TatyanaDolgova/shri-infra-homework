@@ -61,7 +61,7 @@ jobs:
         run: |
           git fetch --tags
           last_tag=$(git describe --tags --abbrev=0)
-          echo "Last tag is $last_tag"
+          echo "last_tag=${last_tag}" >> $GITHUB_ENV
 
       - name: Generate release notes
         id: notes
@@ -71,7 +71,8 @@ jobs:
           echo "**Автор:** ${{ github.actor }}" >> release-notes.md
           echo "**Дата:** $(date)" >> release-notes.md
           echo "**Список коммитов:**" >> release-notes.md
-          git log $last_tag..HEAD --oneline >> release-notes.md
+          git log ${{ env.last_tag }}..HEAD --oneline >> release-notes.md
+          echo "" >> release-notes.md
           echo "**Docker-образ:** [Link to Docker image](cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }})" >> release-notes.md
 
       - name: Create GitHub Issue
