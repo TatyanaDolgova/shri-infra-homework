@@ -35,7 +35,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }} .
-          docker tag cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }} cr.yandex/${{ secrets.YANДЕКС_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+          docker tag cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }} cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
 
       - name: Log in to Yandex Cloud Container Registry
         run: |
