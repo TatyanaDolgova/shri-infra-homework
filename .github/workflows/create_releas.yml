@@ -97,6 +97,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Set up Git
+        run: |
+          git config --global user.email "you@yandex.ru"
+          git config --global user.name "Tatiana"
+
       - name: Update CHANGELOG.md
         run: |
           echo "## Release ${{ github.run_number }}" > temp_changelog.md
@@ -104,7 +109,7 @@ jobs:
           echo "- Version: ${{ github.run_number }}" >> temp_changelog.md
           echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> temp_changelog.md
           echo "- Commits:" >> temp_changelog.md
-          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h - %s" >> temp_changelog.md
+          git log $latest_tag..HEAD --pretty=format:"- %s" >> temp_changelog.md
           cat CHANGELOG.md >> temp_changelog.md
           mv temp_changelog.md CHANGELOG.md
           git add CHANGELOG.md
