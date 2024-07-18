@@ -46,14 +46,3 @@ jobs:
         run: |
           docker push cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}
           docker push cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}_latest
-
-      - name: Create release tag
-        run: |
-          git tag -a v${{ github.run_number }} -m "Release version ${{ github.run_number }}"
-          git push origin v${{ github.run_number }}
-
-      - name: Create GitHub Issue
-        uses: peter-evans/create-issue-from-file@v4
-        with:
-          title: "Release ${{ github.run_number }}"
-          content-filepath: issue-template.md
