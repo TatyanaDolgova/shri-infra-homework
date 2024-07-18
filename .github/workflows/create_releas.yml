@@ -52,7 +52,7 @@ jobs:
           git config --global user.name "Tatiana"
 
   create_tag:
-    needs: build_and_push_docker
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
