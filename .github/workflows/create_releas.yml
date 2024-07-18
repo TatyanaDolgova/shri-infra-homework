@@ -46,3 +46,20 @@ jobs:
         run: |
           docker push cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}
           docker push cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}_latest
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          echo "## Release ${{ github.run_number }} - $(date)" > release-notes.md
+          echo "" >> release-notes.md
+          echo "**Author:** ${{ github.actor }}" >> release-notes.md
+          echo "**Commits:**" >> release-notes.md
+          git log $(git describe --tags --abbrev=0 @^)..@ --oneline >> release-notes.md
+          echo "" >> release-notes.md
+          echo "**Docker Image:** cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> release-notes.md
+
+      - name: Create GitHub Issue
+        uses: peter-evans/create-issue-from-file@v4
+        with:
+          title: "Release ${{ github.run_number }}"
+          content-filepath: release-notes.md
