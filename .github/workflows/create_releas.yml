@@ -51,37 +51,59 @@ jobs:
           git config --global user.email "you@yandex.ru"
           git config --global user.name "Tatiana"
 
-      - name: Create tag for main branch
+  create_tag:
+    needs: build_and_push_docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create tag
         run: |
-          git tag v${{ github.run_number }} -m "Release version ${{ github.run_number }}"
-          git push origin v${{ github.run_number }}
+          git tag ${GITHUB_RUN_NUMBER}
+          git push origin ${GITHUB_RUN_NUMBER}
 
-      - name: Get previous release tag
-        id: get-previous-tag
-        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 HEAD^1)"
+  create_github_issue:
+    needs: create_tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Get commit messages since previous release
-        id: get-commit-messages
-        run: echo "::set-output name=commits::$(git log ${{ steps.get-previous-tag.outputs.tag }}..HEAD --pretty=format:'%h - %s (%an)')"
-
-      - name: Create GitHub issue
+      - name: Create issue
+        id: create_issue
         uses: peter-evans/create-issue-from-file@v2
         with:
-          title: "Release ${{ github.run_number }}"
-          content: |
-            ## Release Details
-            - **Date**: ${{ github.event.workflow_dispatch.created_at }}
-            - **Author**: ${{ github.actor }}
-            - **Version**: ${{ github.run_number }}
-            - **Commits**:
-            ${{ steps.get-commit-messages.outputs.commits }}
-            - **Docker Image**: [cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}](cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }})**
+          title: Release ${{ github.run_number }}
+          content-filepath: ./issue_template.md
+          labels: release
+
+      - name: Prepare issue content
+        run: |
+          echo "## Release ${{ github.run_number }}" > issue_template.md
+          echo "- Date: $(date)" >> issue_template.md
+          echo "- Author: ${{ github.actor }}" >> issue_template.md
+          echo "- Version: ${{ github.run_number }}" >> issue_template.md
+          echo "- Docker Image: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app:${{ github.run_number }}" >> issue_template.md
+          echo "- Commits:" >> issue_template.md
+          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h - %s" >> issue_template.md
+
+  update_changelog:
+    needs: create_tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Update CHANGELOG.md
         run: |
-          echo "## Version ${{ github.run_number }}" >> CHANGELOG.md
-          echo $'\n' >> CHANGELOG.md
-          echo "${{ steps.get-commit-messages.outputs.commits }}" >> CHANGELOG.md
+          echo "## Release ${{ github.run_number }}" > temp_changelog.md
+          echo "- Date: $(date)" >> temp_changelog.md
+          echo "- Version: ${{ github.run_number }}" >> temp_changelog.md
+          echo "- Commits:" >> temp_changelog.md
+          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h - %s" >> temp_changelog.md
+          cat CHANGELOG.md >> temp_changelog.md
+          mv temp_changelog.md CHANGELOG.md
           git add CHANGELOG.md
-          git commit -m "Update CHANGELOG for version ${{ github.run_number }}"
-          git push origin HEAD
+          git commit -m "Update CHANGELOG.md for release ${{ github.run_number }}"
+          git push origin main
