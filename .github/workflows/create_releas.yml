@@ -56,17 +56,23 @@ jobs:
           git tag v${{ github.run_number }} -m "Release version ${{ github.run_number }}"
           git push origin v${{ github.run_number }}
 
+      - name: Determine last tag
+        id: last_tag
+        run: |
+          git fetch --tags
+          last_tag=$(git describe --tags --abbrev=0)
+          echo "Last tag is $last_tag"
+
       - name: Generate release notes
         id: notes
         run: |
-          last_tag=$(git describe --tags --abbrev=0)
           echo "## Релиз ${{ github.run_number }}" > release-notes.md
           echo "" >> release-notes.md
           echo "**Автор:** ${{ github.actor }}" >> release-notes.md
           echo "**Дата:** $(date)" >> release-notes.md
           echo "**Список коммитов:**" >> release-notes.md
           git log $last_tag..HEAD --oneline >> release-notes.md
-          echo "**Docker-образ:**  echo "[Link to Docker image](cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }})" >> release-notes.md
+          echo "**Docker-образ:** [Link to Docker image](cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }})" >> release-notes.md
 
       - name: Create GitHub Issue
         uses: peter-evans/create-issue-from-file@v4
@@ -79,7 +85,7 @@ jobs:
           echo "Релиз ${{ github.run_number }}" > changelog-temp.md
           echo "" >> changelog-temp.md
           echo "### Commits" >> changelog-temp.md
-          git log $(git describe --tags --abbrev=0 @^)..@ --oneline >> changelog-temp.md
+          git log ${last_tag}..HEAD --oneline >> changelog-temp.md
           echo "" >> changelog-temp.md
           cat CHANGELOG.md >> changelog-temp.md
           mv changelog-temp.md CHANGELOG.md
