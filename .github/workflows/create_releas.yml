@@ -66,17 +66,11 @@ jobs:
   create_github_issue:
     needs: create_tag
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Create issue
-        id: create_issue
-        uses: peter-evans/create-issue-from-file@v2
-        with:
-          title: Release ${{ github.run_number }}
-          content-filepath: ./issue_template.md
-          labels: release
 
       - name: Prepare issue content
         run: |
@@ -84,9 +78,18 @@ jobs:
           echo "- Date: $(date)" >> issue_template.md
           echo "- Author: ${{ github.actor }}" >> issue_template.md
           echo "- Version: ${{ github.run_number }}" >> issue_template.md
-          echo "- Docker Image: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app:${{ github.run_number }}" >> issue_template.md
+          echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> issue_template.md
           echo "- Commits:" >> issue_template.md
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h - %s" >> issue_template.md
+
+      - name: Create issue
+        run: |
+          gh issue create \
+            --title "Release ${{ github.run_number }}" \
+            --body "$(cat issue_template.md)" \
+            --label "release"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   update_changelog:
     needs: create_tag
@@ -100,6 +103,7 @@ jobs:
           echo "## Release ${{ github.run_number }}" > temp_changelog.md
           echo "- Date: $(date)" >> temp_changelog.md
           echo "- Version: ${{ github.run_number }}" >> temp_changelog.md
+          echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> temp_changelog.md
           echo "- Commits:" >> temp_changelog.md
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h - %s" >> temp_changelog.md
           cat CHANGELOG.md >> temp_changelog.md
