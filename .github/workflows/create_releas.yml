@@ -59,7 +59,7 @@ jobs:
       - name: Generate release notes
         id: notes
         run: |
-          last_tag=$(git describe --tags --abbrev=0 HEAD^)
+          last_tag=$(git describe --tags --abbrev=0)
           echo "## Релиз ${{ github.run_number }}" > release-notes.md
           echo "" >> release-notes.md
           echo "**Автор:** ${{ github.actor }}" >> release-notes.md
