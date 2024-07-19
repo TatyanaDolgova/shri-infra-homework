@@ -14,6 +14,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Debug - List all branches
+        run: git branch -a
+
+      - name: Debug - Fetch all branches
+        run: git fetch --all
 
       - name: Checkout release branch
         run: git checkout releases/${{ github.event.inputs.release_version }}
