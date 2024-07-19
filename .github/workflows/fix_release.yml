@@ -30,7 +30,7 @@ jobs:
 
       - name: Checkout release branch
         run: |
-          git checkout releases/${{ github.event.inputs.release_version }}
+          git checkout origin/releases/${{ github.event.inputs.release_version }}
 
       - name: Build Docker image
         run: |
