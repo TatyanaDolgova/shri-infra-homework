@@ -30,8 +30,8 @@ jobs:
         run: |
           docker stop app || true
           docker rm app || true
-          docker pull cr.yandex/${secrets.YANDEX_REGISTRY_ID}/ubuntu:hello
-          docker run cr.yandex/${secrets.YANDEX_REGISTRY_ID}/ubuntu:hello
+          docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/ubuntu:hello
+          docker run cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/ubuntu:hello
 
       - name: Add comment to GitHub issue
         run: |
