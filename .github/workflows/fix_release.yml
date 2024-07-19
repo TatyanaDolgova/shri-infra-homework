@@ -82,12 +82,6 @@ jobs:
           body=$(cat issue_comment.md | jq -R -s '.')
           echo "BODY=${body}" >> $GITHUB_OUTPUT
 
-      - name: List all issues for debugging
-        run: |
-          gh issue list --json number,title,labels --jq '.[] | {number: .number, title: .title, labels: [.labels[].name]}' | tee all_issues.json
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Find related issue
         id: find_issue
         run: |
@@ -98,9 +92,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add comment to GitHub issue
+        if: env.ISSUE_NUMBER != ''
         run: |
-          echo "Commenting on issue number: ${{ steps.find_issue.outputs.ISSUE_NUMBER }}"
-          gh issue comment ${{ steps.find_issue.outputs.ISSUE_NUMBER }} --body "${{ steps.prepare_comment.outputs.BODY }}"
+          echo "Adding comment to issue number: $ISSUE_NUMBER"
+          gh issue comment "$ISSUE_NUMBER" --body "## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}\n- Date: $(date)\n- Author: ${{ github.actor }}\n- Commits:\n$(git log ${{ steps.prev_tag.outputs.tag }}..HEAD --pretty=format:\"%h - %s\")\n- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
