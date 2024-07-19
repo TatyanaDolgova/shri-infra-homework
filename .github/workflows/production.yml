@@ -33,8 +33,8 @@ jobs:
           script: |
             docker stop app || true
             docker rm app || true
-            docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
-            docker run -d --name app -p 80:80 cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+            docker pull cr.yandex/${secrets.REGISTRY_ID}/ubuntu:hello
+            docker run cr.yandex/${REGISTRY_ID}/ubuntu:hello
 
       - name: Add comment to GitHub issue
         run: |
