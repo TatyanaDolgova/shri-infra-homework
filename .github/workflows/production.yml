@@ -33,11 +33,20 @@ jobs:
           docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
           docker run -d --name app -p 3000:3000 cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
 
-      - name: Add comment to GitHub issue
+      - name: Find related issue
+        id: find_issue
         run: |
-          ISSUE_NUMBER=$(jq --raw-output .issue.number "$GITHUB_EVENT_PATH")
-          COMMENT="Release ${{ github.event.inputs.release_version }} deployed to production on $(date --utc +'%Y-%m-%dT%H:%M:%SZ') by ${{ github.actor }}"
-          echo "$COMMENT" > comment.txt
-          gh issue comment $ISSUE_NUMBER -F comment.txt
+          issue_number=$(gh issue list --search "Release ${{ github.event.inputs.release_version }}" --json number --jq '.[0].number')
+          echo "Found issue number: $issue_number"
+          echo "ISSUE_NUMBER=$issue_number" >> $GITHUB_ENV
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare comment body
+        id: prepare_comment
+        run: |
+          comment="##Релиз выкачан в прод##"
+          comment+=" - Дата: $(date --utc +'%Y-%m-%dT%H:%M:%SZ') "
+          comment+=" - Автор: ${{ github.actor }} "
+          echo "$comment" > issue_comment.md
+          echo "COMMENT_BODY=$(cat issue_comment.md)" >> $GITHUB_ENV
