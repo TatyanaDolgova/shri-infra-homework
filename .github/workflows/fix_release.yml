@@ -85,6 +85,8 @@ jobs:
       - name: List all issues for debugging
         run: |
           gh issue list --json number,title,labels --jq '.[] | {number: .number, title: .title, labels: [.labels[].name]}' | tee all_issues.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find related issue
         id: find_issue
