@@ -73,7 +73,7 @@ jobs:
         id: prepare_comment
         run: |
           echo "## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}" > issue_comment.md
-          echo "- Date: $(date)" >> issue_comment.md
+          echo "- Date: $(date --utc +'%Y-%m-%dT%H:%M:%SZ')" >> issue_comment.md
           echo "- Author: ${{ github.actor }}" >> issue_comment.md
           echo "- Commits:" >> issue_comment.md
           git log ${{ env.tag }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
