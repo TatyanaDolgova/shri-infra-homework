@@ -15,10 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      -name: Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history so we can checkout branches/tags
+          fetch-depth: 0 # Fetch all history so we can checkout branches/tags
 
       - name: Debug - List all branches
         run: git branch -a
