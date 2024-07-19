@@ -68,7 +68,7 @@ jobs:
 
       - name: Get previous release tag
         id: prev_tag
-        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 HEAD^)"
+        run: echo "TAG=$(git describe --tags --abbrev=0 HEAD^)" >> $GITHUB_OUTPUT
 
       - name: Prepare comment body
         id: prepare_comment
@@ -77,24 +77,23 @@ jobs:
           echo "- Date: $(date)" >> issue_comment.md
           echo "- Author: ${{ github.actor }}" >> issue_comment.md
           echo "- Commits:" >> issue_comment.md
-          git log ${{ steps.prev_tag.outputs.tag }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
+          git log ${{ steps.prev_tag.outputs.TAG }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
           echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}" >> issue_comment.md
-          echo "::set-output name=body::$(cat issue_comment.md)"
+          echo "BODY=$(cat issue_comment.md)" >> $GITHUB_OUTPUT
 
       - name: Find related issue
         id: find_issue
         run: |
           issue_number=$(gh issue list --label release --search "Release ${{ github.event.inputs.release_version }}" --json number --jq '.[0].number')
           echo "Found issue number: $issue_number"
-          echo "::set-output name=issue_number::$issue_number"
+          echo "ISSUE_NUMBER=$issue_number" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add comment to GitHub issue
         run: |
-          issue_number=${{ steps.find_issue.outputs.issue_number }}
-          echo "Commenting on issue number: $issue_number"
-          gh issue comment $issue_number --body "${{ steps.prepare_comment.outputs.body }}"
+          echo "Commenting on issue number: ${{ steps.find_issue.outputs.ISSUE_NUMBER }}"
+          gh issue comment ${{ steps.find_issue.outputs.ISSUE_NUMBER }} --body "${{ steps.prepare_comment.outputs.BODY }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
