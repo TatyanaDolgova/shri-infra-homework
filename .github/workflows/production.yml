@@ -31,9 +31,9 @@ jobs:
 
       - name: Deploy Docker image to VM via SSH
         run: |
-          docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
-          docker stop app || true
+          docker stop --name app || true
           docker rm app || true
+          docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
           docker run -d --name app -p 3000:3000 cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
 
       - name: Find related issue
@@ -52,7 +52,7 @@ jobs:
       - name: Prepare comment body
         id: prepare_comment
         run: |
-          comment="## Релиз выкачан в прод  "
+          comment="## Релиз выкачан в прод"
           comment+="**Дата:** $(date --utc +'%Y-%m-%dT%H:%M:%SZ')  "
           comment+="**Автор:** ${{ github.actor }}  "
           echo "$comment" > issue_comment.md
