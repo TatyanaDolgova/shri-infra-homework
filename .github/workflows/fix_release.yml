@@ -73,26 +73,17 @@ jobs:
         id: prepare_comment
         run: |
           echo "## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}" > issue_comment.md
-          echo "- Date: $(date --utc +'%Y-%m-%dT%H:%M:%SZ')" >> issue_comment.md
+          echo "- Date: $(date)" >> issue_comment.md
           echo "- Author: ${{ github.actor }}" >> issue_comment.md
           echo "- Commits:" >> issue_comment.md
-          git log ${{ steps.prev_tag.outputs.TAG }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
+          git log ${{ env.tag }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
           echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}" >> issue_comment.md
-          body=$(cat issue_comment.md | jq -R -s '.')
-          echo "BODY=${body}" >> $GITHUB_OUTPUT
-
-      - name: Find related issue
-        id: find_issue
-        run: |
-          issue_number=$(gh issue list --search "Release ${{ github.event.inputs.release_version }}" --json number --jq '.[0].number')
-          echo "Found issue number: $issue_number"
-          echo "ISSUE_NUMBER=$issue_number" >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          cat issue_comment.md
+          echo "COMMENT_BODY=$(cat issue_comment.md)" >> $GITHUB_ENV
 
       - name: Add comment to GitHub issue
         run: |
           echo "Adding comment to issue number: $ISSUE_NUMBER"
-          gh issue comment "$ISSUE_NUMBER" --body "$BODY"
+          gh issue comment "$ISSUE_NUMBER" --body "$COMMENT_BODY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
