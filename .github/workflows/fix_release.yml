@@ -67,7 +67,7 @@ jobs:
 
       - name: Get previous release tag
         id: prev_tag
-        run: echo "TAG=$(git describe --tags --abbrev=0 HEAD^)" >> $GITHUB_OUTPUT
+        run: echo "TAG=$(git describe --tags --abbrev=0 HEAD^)" >> $GITHUB_ENV
 
       - name: Find related issue
         id: find_issue
@@ -81,12 +81,12 @@ jobs:
       - name: Prepare comment body
         id: prepare_comment
         run: |
-          comment="## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}\n"
-          comment+=" - Date: $(date --utc +'%Y-%m-%dT%H:%M:%SZ')\n"
-          comment+=" - Author: ${{ github.actor }}\n"
-          comment+=" - Commits:\n"
-          comment+=$(git log ${{ env.tag }}..HEAD --pretty=format:"%h - %s" | sed 's/^/   /') # Indent commits for better readability
-          comment+=" - Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}\n"
+          comment="## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}  "
+          comment+=" - Дата: $(date --utc +'%Y-%m-%dT%H:%M:%SZ')  "
+          comment+=" - Автор: ${{ github.actor }} "
+          comment+=" - Коммиты:  "
+          comment+=$(git log $TAG..HEAD --pretty=format:"- %s")
+          comment+=" - Docker Образ: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}\n"
           echo "$comment" > issue_comment.md
           echo "COMMENT_BODY=$(cat issue_comment.md)" >> $GITHUB_ENV
 
