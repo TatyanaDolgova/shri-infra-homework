@@ -37,6 +37,10 @@ jobs:
         id: find_issue
         run: |
           issue_number=$(gh issue list --search "Release ${{ github.event.inputs.release_version }}" --json number --jq '.[0].number')
+          if [ -z "$issue_number" ]; then
+            echo "No related issue found"
+            exit 1
+          fi
           echo "Found issue number: $issue_number"
           echo "ISSUE_NUMBER=$issue_number" >> $GITHUB_ENV
         env:
@@ -45,8 +49,14 @@ jobs:
       - name: Prepare comment body
         id: prepare_comment
         run: |
-          comment="##Релиз выкачан в прод##"
-          comment+=" - Дата: $(date --utc +'%Y-%m-%dT%H:%M:%SZ') "
-          comment+=" - Автор: ${{ github.actor }} "
+          comment="## Релиз выкачан в прод\n"
+          comment+="**Дата:** $(date --utc +'%Y-%m-%dT%H:%M:%SZ')\n"
+          comment+="**Автор:** ${{ github.actor }}\n"
           echo "$comment" > issue_comment.md
           echo "COMMENT_BODY=$(cat issue_comment.md)" >> $GITHUB_ENV
+
+      - name: Add comment to GitHub issue
+        run: |
+          gh issue comment ${{ env.ISSUE_NUMBER }} -F issue_comment.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
