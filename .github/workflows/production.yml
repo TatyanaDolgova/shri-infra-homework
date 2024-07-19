@@ -37,7 +37,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             sudo usermod -aG docker ${{ secrets.SSH_USER }}
-            sudo systemctl restart sshd
+            sudo reboot
 
       - name: Deploy Docker image to VM via SSH
         uses: appleboy/ssh-action@v0.1.6
@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            echo ${{ secrets.YANDEX_REGISTRY_TOKEN }} | docker login --username oauth --password-stdin cr.yandex
+            echo ${{ secrets.YANDEX_REGISTRY_TOKEN }} | sudo docker login --username oauth --password-stdin cr.yandex
 
             sudo docker stop app || true
             sudo docker rm app || true
