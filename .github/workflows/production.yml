@@ -35,7 +35,9 @@ jobs:
 
       - name: Add comment to GitHub issue
         run: |
-          echo "Release ${{ github.event.inputs.release_version }} deployed to production on $(date --utc +'%Y-%m-%dT%H:%M:%SZ') by ${{ github.actor }}" > comment.txt
-          gh issue comment ${{ github.event_path }} -b "$(cat comment.txt)"
+          ISSUE_NUMBER=$(jq --raw-output .issue.number "$GITHUB_EVENT_PATH")
+          COMMENT="Release ${{ github.event.inputs.release_version }} deployed to production on $(date --utc +'%Y-%m-%dT%H:%M:%SZ') by ${{ github.actor }}"
+          echo "$COMMENT" > comment.txt
+          gh issue comment $ISSUE_NUMBER -F comment.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
