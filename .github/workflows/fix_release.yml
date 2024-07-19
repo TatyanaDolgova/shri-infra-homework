@@ -92,7 +92,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add comment to GitHub issue
-        if: env.ISSUE_NUMBER != ''
         run: |
           echo "Adding comment to issue number: $ISSUE_NUMBER"
           gh issue comment "$ISSUE_NUMBER" --body "## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}\n- Date: $(date)\n- Author: ${{ github.actor }}\n- Commits:\n$(git log ${{ steps.prev_tag.outputs.tag }}..HEAD --pretty=format:\"%h - %s\")\n- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}"
