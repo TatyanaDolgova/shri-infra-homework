@@ -38,6 +38,7 @@ jobs:
           script: |
             sudo groupadd docker
             sudo usermod -aG docker ${{ secrets.SSH_USER }}
+            echo ${{ secrets.YANDEX_REGISTRY_TOKEN }} | docker login --username oauth --password-stdin cr.yandex
 
             docker stop app || true
             docker rm app || true
