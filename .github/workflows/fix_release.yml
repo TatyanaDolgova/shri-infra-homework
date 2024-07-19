@@ -72,13 +72,13 @@ jobs:
       - name: Prepare comment body
         id: prepare_comment
         run: |
-          echo "## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}" >> issue_comment.md
-          echo "- Date: $(date --utc +'%Y-%m-%dT%H:%M:%SZ')" >> issue_comment.md
-          echo "- Author: ${{ github.actor }}" >> issue_comment.md
-          echo "- Commits:" >> issue_comment.md
-          git log ${{ env.tag }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
-          echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}" >> issue_comment.md
-          cat issue_comment.md
+          comment="## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}\n"
+          comment+=" - Date: $(date --utc +'%Y-%m-%dT%H:%M:%SZ')\n"
+          comment+=" - Author: ${{ github.actor }}\n"
+          comment+=" - Commits:\n"
+          comment+=$(git log ${{ env.tag }}..HEAD --pretty=format:"%h - %s" | sed 's/^/   /') # Indent commits for better readability
+          comment+=" - Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}\n"
+          echo "$comment" > issue_comment.md
           echo "COMMENT_BODY=$(cat issue_comment.md)" >> $GITHUB_ENV
 
       - name: Add comment to GitHub issue
