@@ -94,34 +94,34 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  update_changelog:
-    needs: create_tag
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  # update_changelog:
+  #   needs: create_tag
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: Set up Git
-        run: |
-          git config --global user.email "you@yandex.ru"
-          git config --global user.name "Tatiana"
+  #     - name: Set up Git
+  #       run: |
+  #         git config --global user.email "you@yandex.ru"
+  #         git config --global user.name "Tatiana"
 
-      - name: Update CHANGELOG.md
-        run: |
-          echo "## Release ${{ github.run_number }}" > temp_changelog.md
-          echo "- Дата: $(date)" >> temp_changelog.md
-          echo "- Версия: ${{ github.run_number }}" >> temp_changelog.md
-          echo "- Docker Образ: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> temp_changelog.md
-          echo "- Коммиты:" >> temp_changelog.md
-          git log $TAG..HEAD --pretty=format:"- %s" >> temp_changelog.md
-          cat CHANGELOG.md >> temp_changelog.md
-          mv temp_changelog.md CHANGELOG.md
-          git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md for release ${{ github.run_number }}"
-          git push origin update-changelog-${{ github.run_number }}
+  #     - name: Update CHANGELOG.md
+  #       run: |
+  #         echo "## Release ${{ github.run_number }}" > temp_changelog.md
+  #         echo "- Дата: $(date)" >> temp_changelog.md
+  #         echo "- Версия: ${{ github.run_number }}" >> temp_changelog.md
+  #         echo "- Docker Образ: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> temp_changelog.md
+  #         echo "- Коммиты:" >> temp_changelog.md
+  #         git log $TAG..HEAD --pretty=format:"- %s" >> temp_changelog.md
+  #         cat CHANGELOG.md >> temp_changelog.md
+  #         mv temp_changelog.md CHANGELOG.md
+  #         git add CHANGELOG.md
+  #         git commit -m "Update CHANGELOG.md for release ${{ github.run_number }}"
+  #         git push origin update-changelog-${{ github.run_number }}
 
-      - name: Create Pull Request
-        run: |
-          gh pr create --title "Update CHANGELOG.md for release ${{ github.run_number }}" --body "This PR updates the CHANGELOG.md with release information" --base main --head update-changelog-${{ github.run_number }}
-        env:
+  #     - name: Create Pull Request
+  #       run: |
+  #         gh pr create --title "Update CHANGELOG.md for release ${{ github.run_number }}" --body "This PR updates the CHANGELOG.md with release information" --base main --head update-changelog-${{ github.run_number }}
+  #       env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
