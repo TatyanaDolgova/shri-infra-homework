@@ -36,6 +36,9 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            sudo groupadd docker
+            sudo usermod -aG docker ${{ secrets.SSH_USER }}
+
             docker stop app || true
             docker rm app || true
             docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
