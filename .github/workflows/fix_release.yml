@@ -74,12 +74,13 @@ jobs:
         id: prepare_comment
         run: |
           echo "## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}" > issue_comment.md
-          echo "- Date: $(date)" >> issue_comment.md
+          echo "- Date: $(date --utc +'%Y-%m-%dT%H:%M:%SZ')" >> issue_comment.md
           echo "- Author: ${{ github.actor }}" >> issue_comment.md
           echo "- Commits:" >> issue_comment.md
           git log ${{ steps.prev_tag.outputs.TAG }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
           echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}" >> issue_comment.md
-          echo "BODY=$(cat issue_comment.md)" >> $GITHUB_OUTPUT
+          body=$(cat issue_comment.md | jq -R -s '.')
+          echo "BODY=${body}" >> $GITHUB_OUTPUT
 
       - name: Find related issue
         id: find_issue
