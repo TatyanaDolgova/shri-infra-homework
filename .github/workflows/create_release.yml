@@ -79,10 +79,10 @@ jobs:
       - name: Prepare issue content
         run: |
           echo "## Release ${{ github.run_number }}" > issue_template.md
-          echo "- Date: $(date)" >> issue_template.md
-          echo "- Author: ${{ github.actor }}" >> issue_template.md
-          echo "- Version: ${{ github.run_number }}" >> issue_template.md
-          echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> issue_template.md
+          echo "- Дата: $(date)" >> issue_template.md
+          echo "- Автор: ${{ github.actor }}" >> issue_template.md
+          echo "- Версия: ${{ github.run_number }}" >> issue_template.md
+          echo "- Docker Образ: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> issue_template.md
           echo "- Commits:" >> issue_template.md
           git log $TAG..HEAD --pretty=format:"- %s" >> issue_template.md
 
@@ -106,14 +106,19 @@ jobs:
           git config --global user.email "you@yandex.ru"
           git config --global user.name "Tatiana"
 
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
       - name: Update CHANGELOG.md
         run: |
           echo "## Release ${{ github.run_number }}" > temp_changelog.md
-          echo "- Date: $(date)" >> temp_changelog.md
-          echo "- Version: ${{ github.run_number }}" >> temp_changelog.md
-          echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> temp_changelog.md
-          echo "- Commits:" >> temp_changelog.md
-          git log $latest_tag..HEAD --pretty=format:"- %s" >> temp_changelog.md
+          echo "- Дата: $(date)" >> temp_changelog.md
+          echo "- Версия: ${{ github.run_number }}" >> temp_changelog.md
+          echo "- Docker Образ: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.run_number }}" >> temp_changelog.md
+          echo "- Коммиты:" >> temp_changelog.md
+          git log $TAG..HEAD --pretty=format:"- %s" >> temp_changelog.md
           cat CHANGELOG.md >> temp_changelog.md
           mv temp_changelog.md CHANGELOG.md
           git add CHANGELOG.md
