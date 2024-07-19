@@ -15,17 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history so we can checkout branches/tags
-
-      - name: Debug - List all branches
-        run: git branch -a
-
-      - name: Debug - Fetch all branches
-        run: git fetch --all
-
       - name: Checkout release branch
         run: git checkout releases/${{ github.event.inputs.release_version }}
 
@@ -73,8 +62,8 @@ jobs:
         id: prev_tag
         run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 HEAD^)"
 
-      - name: Add comment to GitHub issue
-        id: add_comment
+      - name: Prepare comment body
+        id: prepare_comment
         run: |
           echo "## Fix Release ${{ github.event.inputs.release_version }} Fix ${{ github.run_number }}" > issue_comment.md
           echo "- Date: $(date)" >> issue_comment.md
@@ -82,6 +71,8 @@ jobs:
           echo "- Commits:" >> issue_comment.md
           git log ${{ steps.prev_tag.outputs.tag }}..HEAD --pretty=format:"%h - %s" >> issue_comment.md
           echo "- Docker Image: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}" >> issue_comment.md
+        outputs:
+          body: $(cat issue_comment.md)
 
       - name: Find related issue
         id: find_issue
@@ -91,8 +82,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Comment on the related issue
+      - name: Add comment to GitHub issue
         run: |
-          gh issue comment ${{ steps.find_issue.outputs.issue_number }} --body "$(cat issue_comment.md)"
+          gh issue comment ${{ steps.find_issue.outputs.issue_number }} --body "$BODY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BODY: ${{ steps.prepare_comment.outputs.body }}
