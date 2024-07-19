@@ -106,11 +106,6 @@ jobs:
           git config --global user.email "you@yandex.ru"
           git config --global user.name "Tatiana"
 
-      - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
-
       - name: Update CHANGELOG.md
         run: |
           echo "## Release ${{ github.run_number }}" > temp_changelog.md
@@ -123,4 +118,10 @@ jobs:
           mv temp_changelog.md CHANGELOG.md
           git add CHANGELOG.md
           git commit -m "Update CHANGELOG.md for release ${{ github.run_number }}"
-          git push origin main
+          git push origin update-changelog-${{ github.run_number }}
+
+      - name: Create Pull Request
+        run: |
+          gh pr create --title "Update CHANGELOG.md for release ${{ github.run_number }}" --body "This PR updates the CHANGELOG.md with release information" --base main --head update-changelog-${{ github.run_number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
