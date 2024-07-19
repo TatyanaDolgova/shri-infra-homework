@@ -69,6 +69,15 @@ jobs:
         id: prev_tag
         run: echo "TAG=$(git describe --tags --abbrev=0 HEAD^)" >> $GITHUB_OUTPUT
 
+      - name: Find related issue
+        id: find_issue
+        run: |
+          issue_number=$(gh issue list --search "Release ${{ github.event.inputs.release_version }}" --json number --jq '.[0].number')
+          echo "Found issue number: $issue_number"
+          echo "ISSUE_NUMBER=$issue_number" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Prepare comment body
         id: prepare_comment
         run: |
