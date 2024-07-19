@@ -85,13 +85,16 @@ jobs:
         id: find_issue
         run: |
           issue_number=$(gh issue list --label release --search "Release ${{ github.event.inputs.release_version }}" --json number --jq '.[0].number')
+          echo "Found issue number: $issue_number"
           echo "::set-output name=issue_number::$issue_number"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add comment to GitHub issue
         run: |
-          gh issue comment ${{ github.event.issue.number }} --body "${{ steps.prepare_comment.outputs.body }}"
+          issue_number=${{ steps.find_issue.outputs.issue_number }}
+          echo "Commenting on issue number: $issue_number"
+          gh issue comment $issue_number --body "${{ steps.prepare_comment.outputs.body }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
