@@ -38,13 +38,13 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker login --username oauth --password $YANDEX_OAUTH cr.yandex
-            docker pull cr.yandex/${{ env.YANDEX_DOCKER_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+            echo "${{ secrets.YANDEX_REGISTRY_TOKEN }}" | docker login --username oauth --password-stdin cr.yandex
+            docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
             echo "Список контейнеров:"
             docker ps
             docker stop $(docker ps -q) || true
             docker rm $(docker ps -a -q) || true
-            docker run -d -p 3000:3000 cr.yandex/${{ env.YANDEX_DOCKER_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+            docker run -d -p 3000:3000 cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
 
       - name: Check running containers
         run: |
