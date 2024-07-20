@@ -19,13 +19,6 @@ jobs:
         run: |
           echo "${{ secrets.YANDEX_REGISTRY_TOKEN }}" | docker login --username oauth --password-stdin cr.yandex
 
-      - name: Check Docker image existence in Yandex Container Registry
-        run: |
-          if ! docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest; then
-            echo "Error: Docker image cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest not found."
-            exit 1
-          fi
-
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.5.3
         with:
@@ -45,11 +38,6 @@ jobs:
             docker stop $(docker ps -q) || true
             docker rm $(docker ps -a -q) || true
             docker run -d -p 3000:3000 cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
-
-      - name: Check running containers
-        run: |
-          docker ps
-          docker logs app
 
       - name: Find related issue
         id: find_issue
