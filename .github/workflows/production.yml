@@ -17,10 +17,7 @@ jobs:
 
       - name: Log in to Yandex Cloud Container Registry
         run: |
-          docker login \
-            --username oauth \
-            --password "${{ secrets.YANDEX_REGISTRY_TOKEN }}" \
-            cr.yandex
+          echo "${{ secrets.YANDEX_REGISTRY_TOKEN }}" | docker login --username oauth --password-stdin cr.yandex
 
       - name: Check Docker image existence in Yandex Container Registry
         run: |
@@ -41,14 +38,13 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            echo "${{ secrets.YANDEX_REGISTRY_TOKEN }}" | docker login --username oauth --password-stdin cr.yandex
-
-            sudo usermod -aG docker ${{ secrets.SSH_USER }}
-            sudo reboot
-            sudo docker stop app || true
-            sudo docker rm app || true
-            sudo docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
-            sudo docker run -d --name app -p 3000:3000 cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+            docker login --username oauth --password $YANDEX_OAUTH cr.yandex
+            docker pull cr.yandex/${{ env.YANDEX_DOCKER_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+            echo "Список контейнеров:"
+            docker ps
+            docker stop $(docker ps -q) || true
+            docker rm $(docker ps -a -q) || true
+            docker run -d -p 3000:3000 cr.yandex/${{ env.YANDEX_DOCKER_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
 
       - name: Check running containers
         run: |
