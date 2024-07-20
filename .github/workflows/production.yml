@@ -29,15 +29,6 @@ jobs:
             exit 1
           fi
 
-      - name: Test SSH connection
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            echo "SSH connection successful!"
-
       - name: Add user to docker group
         uses: appleboy/ssh-action@v0.1.6
         with:
