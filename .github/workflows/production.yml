@@ -29,6 +29,11 @@ jobs:
             exit 1
           fi
 
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
       - name: Deploy Docker image to VM via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
