@@ -29,7 +29,7 @@ jobs:
             exit 1
           fi
 
-      - name: Add user to docker group
+      - name: Deploy Docker image to VM via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -38,14 +38,6 @@ jobs:
           script: |
             sudo usermod -aG docker ${{ secrets.SSH_USER }}
             sudo reboot
-
-      - name: Deploy Docker image to VM via SSH
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
             sudo docker stop app || true
             sudo docker rm app || true
             sudo docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
