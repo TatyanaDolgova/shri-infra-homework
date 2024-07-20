@@ -15,15 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to Yandex Cloud Container Registry
-        run: |
-          echo "${{ secrets.YANDEX_REGISTRY_TOKEN }}" | docker login --username oauth --password-stdin cr.yandex
-
-      - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
-
       - name: Deploy Docker image to VM via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -33,7 +24,6 @@ jobs:
           script: |
             echo "${{ secrets.YANDEX_REGISTRY_TOKEN }}" | docker login --username oauth --password-stdin cr.yandex
             docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
-            echo "Список контейнеров:"
             docker ps
             docker stop $(docker ps -q) || true
             docker rm $(docker ps -a -q) || true
