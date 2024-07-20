@@ -85,7 +85,7 @@ jobs:
           comment+=" - Дата: $(date --utc +'%Y-%m-%dT%H:%M:%SZ')  "
           comment+=" - Автор: ${{ github.actor }} "
           comment+=" - Коммиты:  "
-          comment+=$(git log $TAG..HEAD --pretty=format:"- %s")
+          comment+="$(git log $TAG..HEAD --pretty=format:'%h %s')"
           comment+=" - Docker Образ: cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_fix${{ github.run_number }}"
           echo "$comment" > issue_comment.md
           echo "COMMENT_BODY=$(cat issue_comment.md)" >> $GITHUB_ENV
