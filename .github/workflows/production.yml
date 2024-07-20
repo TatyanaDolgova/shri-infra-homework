@@ -29,12 +29,27 @@ jobs:
             exit 1
           fi
 
+      - name: Add user to docker group
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            sudo usermod -aG docker ${{ secrets.SSH_USER }}
+            sudo reboot
+
       - name: Deploy Docker image to VM via SSH
-        run: |
-          docker stop app || true
-          docker rm app || true
-          docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
-          docker run -d --name app -p 3000:3000 cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            sudo docker stop app || true
+            sudo docker rm app || true
+            sudo docker pull cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
+            sudo docker run -d --name app -p 3000:3000 cr.yandex/${{ secrets.YANDEX_REGISTRY_ID }}/app:${{ github.event.inputs.release_version }}_latest
 
       - name: Check running containers
         run: |
